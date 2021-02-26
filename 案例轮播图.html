@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            border: 0;
+        }
+
+        .all {
+            width: 500px;
+            height: 200px;
+            padding: 7px;
+            border: 1px solid #ccc;
+            margin: 100px auto;
+            position: relative;
+        }
+
+        .screen {
+            width: 500px;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen li {
+            width: 500px;
+            height: 200px;
+            overflow: hidden;
+            float: left;
+        }
+
+        .screen ul {
+            position: absolute;
+            left: 0;
+            top: 0px;
+            width: 3000px;
+        }
+
+        .all ol {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        .all ol li {
+            float: left;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .all ol li.current {
+            background: #DB192A;
+        }
+
+        #arr {
+            display: none;
+        }
+
+        #arr span {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            margin-top: -20px;
+            background: #000;
+            cursor: pointer;
+            line-height: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-family: '黑体';
+            font-size: 30px;
+            color: #fff;
+            opacity: 0.3;
+            border: 1px solid #fff;
+        }
+
+        #arr #right {
+            right: 5px;
+            left: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="all" id='box'>
+    <div class="screen"><!--相框-->
+        <ul>
+            <li><img src="images/1.jpg" width="500" height="200"/></li>
+            <li><img src="images/2.jpg" width="500" height="200"/></li>
+            <li><img src="images/3.jpg" width="500" height="200"/></li>
+            <li><img src="images/4.jpg" width="500" height="200"/></li>
+            <li><img src="images/5.jpg" width="500" height="200"/></li>
+        </ul>
+        <ol>
+        </ol>
+    </div>
+    <div id="arr"><span id="left">&lt;</span><span id="right">&gt;</span></div>
+</div>
+<script>
+    var my$=function (id) {
+        return document.getElementById(id);
+    };
+    //获取box；
+    var box = my$("box");
+    //获取screen
+    var screen = box.children[0];
+    //获取screen的宽度
+    var imgwidth = screen.offsetWidth;
+    //获取ul
+    var ulObj = screen.children[0];
+    //获取ol
+    var olObj = screen.children[1];
+    //获取arr
+    var arr = my$("arr");
+    //循环ul得到li的个数
+    var pic = 0;
+    for (var i = 0; i < ulObj.children.length; i++) {
+        //根据li的个数创建ol里的li
+        var listObj = document.createElement("li");
+        //把listObj加入到ol中
+        olObj.appendChild(listObj);
+        //自定义一个属性存储list的索引
+        listObj.setAttribute("index", i);
+        //为每个ol里的li注册鼠标滑入事件
+        listObj.onmouseover = function () {
+            //排他事件，移除所有li的背景样式
+            for (var j = 0; j < olObj.children.length; j++) {
+                olObj.children[j].removeAttribute("class");
+            }
+            //设置当前鼠标选中的li背景样式
+            this.className = "current";
+            //获取自定义的索引值
+            pic = this.getAttribute("index");
+            //设置选中的li背景移动
+            ulObj.style.left=-pic*imgwidth+"px";
+        }
+    }
+    //设置ol里面第一个li的背景样式
+    olObj.children[0].className = "current";
+    //克隆一个ul里面的第一个子元素到ul最后
+    ulObj.appendChild(ulObj.children[0].cloneNode(true));
+    //图片自动左移动定时器
+    var timeId = setInterval(lefttt, 1000);
+    //鼠标进入到box显示arr
+    box.onmouseover = function () {
+        arr.style.display = "block";
+        //鼠标进入的时候清理自动移动定时器
+        clearInterval(timeId);
+    };
+    //鼠标离开隐藏arr
+    box.onmouseout = function () {
+        arr.style.display = "none";
+        //鼠标离开后重新开启一个定时器
+        timeId = setInterval(lefttt, 1000);
+    };
+    //获取arr里面右边的按钮，注册点击事件
+    my$("right").onclick = lefttt;
+
+    //右边点击按钮事件函数
+    function lefttt() {
+        //如果pic等于5，也就是ul里面li的个数减一，因为最后个li是障眼法，让用户以为是第一个li
+        if (pic == ulObj.children.length - 1) {
+            pic = 0;//让pic归0
+            ulObj.style.left = 0 + "px";//并且ul的位置也归零
+        }
+        //再点下一张的时候马上pic+1,并且显示到第二个li
+        pic++;
+        ulObj.style.left=-pic*imgwidth+"px";
+        //如果当前是倒数第二个li,去掉倒数第二个li类样式，并且给第一个里添加类样式
+        if (pic == ulObj.children.length - 1) {
+            olObj.children[olObj.children.length - 1].removeAttribute("class");
+            olObj.children[0].className = "current";
+        } else {
+            //否则进入排他情况，去掉所有li的类样式
+            for (var i = 0; i < olObj.children.length; i++) {
+                olObj.children[i].removeAttribute("class");
+            }
+            //给当前pic对应的li显示类样式
+            olObj.children[pic].className = "current";
+        }
+    }
+    //获取arr里面左边的按钮,注册点击事件
+    my$("left").onclick = function () {
+        //如果当前显示的第一个图片，那么pic的值就是0
+        //如果pic的值等于0
+        if (pic == 0) {
+            //那么设置pic的值马上等于ul元素个数减1，其实是假象，让用户以为是第一个，其实就是显示的最后一个
+            pic = ulObj.children.length - 1;
+            //然后设置ul的位置移动到最后一张图的位置
+            ulObj.style.left = -pic * imgwidth + "px";
+        }
+        //然后设置再点击左按钮，马上pic的值减1，那么就是最后一张图减1，跳转到了第五张图
+        pic--;
+        ulObj.style.left=-pic*imgwidth+"px";
+        //去掉所有ol里面li的类样式
+        for (var i = 0; i < olObj.children.length; i++) {
+            olObj.children[i].removeAttribute("class");
+        }
+        //然后设置当前选中的ol里面li标签的类样式,pic就是对应显示的listObj里面的元素位置；
+        olObj.children[pic].className = "current";
+
+    };
+</script>
+</body>
+</html>
